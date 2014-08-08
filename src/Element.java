@@ -10,6 +10,7 @@ public class Element {
 		drawRate = d;
 		lossRate = l;
 	}
+	
 
 	public Element() {
 		returnPercentage = 0;
@@ -23,5 +24,9 @@ public class Element {
 		winRate /= n;
 		drawRate /= n;
 		lossRate /= n;
+	}
+	
+	public String toString(){
+		return returnPercentage+" "+winRate+" "+drawRate+" "+lossRate;
 	}
 }
