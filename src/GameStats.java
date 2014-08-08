@@ -8,16 +8,16 @@ import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.poifs.filesystem.POIFSFileSystem;
+import org.apache.poi.poifs.filesystem.NPOIFSFileSystem;
 
 public class GameStats {
 
-	public ArrayList<Element> collection;
-
+	public ArrayList<Element> collection = new ArrayList<Element>();
+	public String name;
 	public double averageCary;
 
 	// normally 0.5
-	public double range;
+	public double range = 0.5;
 
 	public void parseFromExcel() {
 
@@ -27,33 +27,41 @@ public class GameStats {
 		try {
 			InputStream input = new BufferedInputStream(new FileInputStream(
 					fileName));
-			POIFSFileSystem fs = new POIFSFileSystem(input);
-			HSSFWorkbook wb = new HSSFWorkbook(fs);
-			HSSFSheet sheet = wb.getSheetAt(0);
+			NPOIFSFileSystem nPoi = new NPOIFSFileSystem(input);
+			HSSFWorkbook wb = new HSSFWorkbook(nPoi.getRoot(),true);
+			HSSFSheet sheet = wb.getSheetAt(1);
+
+			name = sheet.getSheetName();
+			System.out.println(name);
 			Iterator rows = sheet.rowIterator();
-			
-			for(int i=0;i<4;i++)
+
+			for (int i = 0; i < 4; i++)
 				rows.next();
-			HSSFRow row=(HSSFRow) rows.next();
-			Iterator cells =row.cellIterator();
-			for(int i=0;i<7;i++)
+			HSSFRow row = (HSSFRow) rows.next();
+			Iterator cells = row.cellIterator();
+			for (int i = 0; i < 7; i++)
 				cells.next();
-			HSSFCell cell=(HSSFCell) cells.next();
-			averageCary=Double.parseDouble(cell.toString());
-			
+			HSSFCell cell = (HSSFCell) cells.next();
+			averageCary = Double.parseDouble(cell.toString());
+
 			rows.next();
-			
+
 			while (rows.hasNext()) {
-				 row = (HSSFRow) rows.next();
-				 cells = row.cellIterator();
-				 Element element=new Element();
-				 for(int i=0;i<7;i++)
-					 cells.next();
-				 element.returnPercentage=Double.parseDouble(((HSSFCell) cells.next()).toString());
-				 element.winRate=Double.parseDouble(((HSSFCell) cells.next()).toString());
-				 element.drawRate=Double.parseDouble(((HSSFCell) cells.next()).toString());
-				 element.lossRate=Double.parseDouble(((HSSFCell) cells.next()).toString());
-				 collection.add(element);
+				row = (HSSFRow) rows.next();
+				cells = row.cellIterator();
+				Element element = new Element();
+				for (int i = 0; i < 7; i++)
+					cells.next();
+				element.returnPercentage = Double.parseDouble(((HSSFCell) cells
+						.next()).toString());
+				element.winRate = Double.parseDouble(((HSSFCell) cells.next())
+						.toString());
+				element.drawRate = Double.parseDouble(((HSSFCell) cells.next())
+						.toString());
+				element.lossRate = Double.parseDouble(((HSSFCell) cells.next())
+						.toString());
+				System.out.println(element);
+				collection.add(element);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -96,6 +104,6 @@ public class GameStats {
 
 	public static void main(String[] args) {
 		GameStats test = new GameStats();
-		test.parse("1.xls");
+		test.parse("2.xls");
 	}
 }
