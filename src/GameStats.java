@@ -13,26 +13,28 @@ import org.apache.poi.poifs.filesystem.NPOIFSFileSystem;
 public class GameStats {
 
 	public ArrayList<Element> collection = new ArrayList<Element>();
+
+	// default value
+	public double averageReturn;
+
+	// normally 0.004
+	public double range = 0.004;
+
 	public String name;
-	public double averageCary;
 
-	// normally 0.5
-	public double range = 0.5;
+	public Element derivation;
 
-	public void parseFromExcel() {
+	private int number;
 
-	}
 
-	public String parse(String fileName) {
+	public void parse(String fileName) {
 		try {
-			InputStream input = new BufferedInputStream(new FileInputStream(
-					fileName));
-			NPOIFSFileSystem nPoi = new NPOIFSFileSystem(input);
-			HSSFWorkbook wb = new HSSFWorkbook(nPoi.getRoot(), true);
+			InputStream input = new BufferedInputStream(new FileInputStream(fileName));
+			NPOIFSFileSystem fs = new NPOIFSFileSystem(input);
+			HSSFWorkbook wb = new HSSFWorkbook(fs.getRoot(),true);
 			HSSFSheet sheet = wb.getSheetAt(1);
-
 			name = sheet.getSheetName();
-			System.out.println(name);
+
 			Iterator rows = sheet.rowIterator();
 
 			for (int i = 0; i < 4; i++)
@@ -42,7 +44,7 @@ public class GameStats {
 			for (int i = 0; i < 7; i++)
 				cells.next();
 			HSSFCell cell = (HSSFCell) cells.next();
-			averageCary = Double.parseDouble(cell.toString());
+			averageReturn = Double.parseDouble(cell.toString());
 
 			rows.next();
 
@@ -54,45 +56,45 @@ public class GameStats {
 					cells.next();
 				element.returnPercentage = Double.parseDouble(((HSSFCell) cells
 						.next()).toString());
-				element.winRate = Double.parseDouble(((HSSFCell) cells.next())
-						.toString());
-				element.drawRate = Double.parseDouble(((HSSFCell) cells.next())
-						.toString());
-				element.lossRate = Double.parseDouble(((HSSFCell) cells.next())
-						.toString());
-				System.out.println(element);
+				element.winRate = 100 * Double.parseDouble(((HSSFCell) cells
+						.next()).toString());
+				element.drawRate = 100 * Double.parseDouble(((HSSFCell) cells
+						.next()).toString());
+				element.lossRate = 100 * Double.parseDouble(((HSSFCell) cells
+						.next()).toString());
 				collection.add(element);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return name;
 
 	}
 
-	private double calculateDerivation(ArrayList<Element> c, Element aver) {
-		int n = c.size();
-		aver.average(n);
-		Element squareSum = new Element();
-		for (int i = 0; i < n; i++) {
+	// calculate the derivation
+	private Element calculateDerivation(ArrayList<Element> c, Element aver) {
+		aver.average(number);
+		Element derivation = new Element();
+		for (int i = 0; i < number; i++) {
 			Element e = c.get(i);
-			squareSum.winRate += Math.pow(e.winRate - aver.winRate, 2);
-			squareSum.drawRate += Math.pow(e.drawRate - aver.drawRate, 2);
-			squareSum.lossRate += Math.pow(e.lossRate - aver.lossRate, 2);
-
+			derivation.winRate += Math.pow(e.winRate - aver.winRate, 2);
+			derivation.drawRate += Math.pow(e.drawRate - aver.drawRate, 2);
+			derivation.lossRate += Math.pow(e.lossRate - aver.lossRate, 2);
 		}
+		derivation.average(number);
+		derivation.standard();
 
-		return 0;
+		return derivation;
 	}
 
 	public void CaryDerivation() {
 		ArrayList<Element> rangedCollection = new ArrayList<Element>();
 
 		Element aver = new Element();
+		// System.out.println(collection.size());
 		for (int i = 0; i < collection.size(); i++) {
 			Element e = collection.get(i);
-			if (e.returnPercentage <= averageCary + range
-					&& e.returnPercentage >= averageCary - range) {
+			if (e.returnPercentage <= averageReturn + range
+					&& e.returnPercentage >= averageReturn - range) {
 				rangedCollection.add(e);
 				aver.returnPercentage += e.returnPercentage;
 				aver.winRate += e.winRate;
@@ -101,6 +103,20 @@ public class GameStats {
 			}
 		}
 
+		number = rangedCollection.size();
+		derivation = calculateDerivation(rangedCollection, aver);
+
+		printCary();
+
 	}
 
+	public void printCary() {
+		System.out.println("Analysis results:\n");
+		System.out.println(name);
+		System.out.println("average return percentage = " + averageReturn);
+		System.out.println("\nrange = " + range + "\tnumber = " + number);
+		System.out.println("win rate = " + derivation.winRate);
+		System.out.println("draw rate = " + derivation.drawRate);
+		System.out.println("loss rate = " + derivation.lossRate);
+	}
 }
