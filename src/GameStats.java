@@ -23,12 +23,12 @@ public class GameStats {
 
 	}
 
-	public void parse(String fileName) {
+	public String parse(String fileName) {
 		try {
 			InputStream input = new BufferedInputStream(new FileInputStream(
 					fileName));
 			NPOIFSFileSystem nPoi = new NPOIFSFileSystem(input);
-			HSSFWorkbook wb = new HSSFWorkbook(nPoi.getRoot(),true);
+			HSSFWorkbook wb = new HSSFWorkbook(nPoi.getRoot(), true);
 			HSSFSheet sheet = wb.getSheetAt(1);
 
 			name = sheet.getSheetName();
@@ -66,6 +66,7 @@ public class GameStats {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		return name;
 
 	}
 
@@ -102,8 +103,4 @@ public class GameStats {
 
 	}
 
-	public static void main(String[] args) {
-		GameStats test = new GameStats();
-		test.parse("2.xls");
-	}
 }
